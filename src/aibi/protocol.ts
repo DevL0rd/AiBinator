@@ -54,7 +54,8 @@ export function act(turn: Turn, behavior: string, params: Params): Reply {
 }
 
 export function chatMode(turn: Turn, type: 'connect' | 'quit', answer?: { text: string; url: string }): Reply {
-    return envelope(turn, 'ability_chatgpt', 'ability_chatgpt', answer ? { type, txt: answer.text, url: answer.url } : { type });
+    const heard = type === 'quit' && !turn.queryText ? { ...turn, queryText: 'Goodbye' } : turn;
+    return envelope(heard, 'ability_chatgpt', 'ability_chatgpt', answer ? { type, txt: answer.text, url: answer.url } : { type });
 }
 
 export function recognize(turn: Turn): Reply {

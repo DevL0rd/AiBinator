@@ -304,8 +304,9 @@ export class Conversation {
     }
 
     private stalled(detail: string): void {
-        this.hooks.warn('Gemini did not answer in time', `${detail} A fresh Gemini session is started for the next turn.`);
+        this.hooks.warn('Gemini did not answer in time', `${detail} A new Gemini session is started for the next turn.`);
         this.generation++;
+        this.resume = undefined;
         const stale = this.session;
         this.session = undefined;
         void stale?.then((session) => session.close()).catch(() => undefined);

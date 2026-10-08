@@ -95,6 +95,11 @@ function checkProtocol(): void {
         'actions without options send an empty list like the cloud',
     );
     assert.deepEqual((chatMode({}, 'quit').queryResult as { behavior_paras: unknown }).behavior_paras, { type: 'quit' });
+    assert.equal(
+        (chatMode({}, 'quit').queryResult as { queryText: string }).queryText,
+        'Goodbye',
+        'AIBI ignores a quit with no heard text, so it always carries some',
+    );
     assert.equal((recognize({}).queryResult as { rec_behavior: string }).rec_behavior, 'interact_recognize');
     assert.equal(photoAnswer({ text: 'A cup', url: 'u' }).index, undefined);
     assert.deepEqual(chatStart('u'), { errcode: 0, url: 'u', errmsg: 'OK', responsetag: 'chatstart' });
