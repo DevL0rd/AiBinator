@@ -1,0 +1,73 @@
+{
+  "name": "aibinator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A local brain for the AIBI pocket robot: Gemini Live as its voice, your Claude Code or Codex for real work.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node --env-file=.env dist/src/main.js",
+    "aibinator": "node --import tsx src/cli.ts",
+    "check": "tsc --noEmit",
+    "validate": "tsx scripts/validate.ts",
+    "coverage": "c8 tsx scripts/validate.ts",
+    "validate:connection": "tsx scripts/validate.ts --connection",
+    "validate:banner": "tsx scripts/check-banner.ts",
+    "complexity": "eslint src scripts",
+    "lint": "eslint src scripts",
+    "check:length": "tsx scripts/check-quality.ts",
+    "check:spelling": "typos",
+    "check:duplicates": "jscpd --fail-on-empty src scripts eslint.config.js",
+    "check:format": "prettier --check \"src/**/*.ts\" \"scripts/**/*.ts\" eslint.config.js",
+    "check:unused": "knip",
+    "quality": "npm run check:length && npm run lint && npm run check:spelling && npm run check:duplicates && npm run check:format && npm run check:unused && npm run check",
+    "setup:spelling": "npm rebuild @ocular-d/typos-bin --ignore-scripts=false",
+    "oauth:password": "node --env-file-if-exists=.env --import tsx scripts/oauth-owner.ts",
+    "validate:oauth": "node --import tsx scripts/validate.ts --oauth"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.291",
+    "@breezystack/lamejs": "^1.2.7",
+    "@google/genai": "2.27.0",
+    "@modelcontextprotocol/node": "^2.1.0",
+    "@modelcontextprotocol/server": "^2.2.0",
+    "argon2": "^0.45.1",
+    "ink": "^6.8.0",
+    "ipaddr.js": "^2.5.0",
+    "jose": "6.2.12",
+    "oidc-provider": "^9.12.2",
+    "react": "^19.3.0",
+    "selfsigned": "^5.5.0",
+    "string-width": "^8.3.0",
+    "ws": "^8.22.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@modelcontextprotocol/client": "^2.2.0",
+    "@ocular-d/typos-bin": "1.50.3",
+    "@types/node": "^22.0.0",
+    "@types/oidc-provider": "^9.12.1",
+    "@types/react": "^19.3.0",
+    "@types/ws": "^8.18.2",
+    "c8": "12.0.0",
+    "eslint": "^10.11.0",
+    "eslint-plugin-sonarjs": "4.2.2",
+    "jscpd": "5.4.0",
+    "knip": "6.39.0",
+    "playwright-core": "^1.63.0",
+    "prettier": "3.9.9",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "typos-bin": {
+    "version": "1.50.3"
+  },
+  "allowScripts": {
+    "@ocular-d/typos-bin@1.50.3": true
+  }
+}

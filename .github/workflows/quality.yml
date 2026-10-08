@@ -1,0 +1,66 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install the pinned spelling binary
+        run: npm run setup:spelling
+      - name: File length (400 lines)
+        run: npm run check:length
+      - name: Complexity, function size and basic lint
+        run: npm run lint
+      - name: Spelling
+        run: npm run check:spelling
+      - name: Duplicate code (zero tolerance)
+        run: npm run check:duplicates
+      - name: Formatting
+        run: npm run check:format
+      - name: Unused code and dependencies
+        run: npm run check:unused
+      - name: Type safety
+        run: npm run check
+
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Offline validation suite with coverage
+        run: npm run coverage
+      - name: README banners
+        if: runner.os == 'Linux'
+        env:
+          AIBINATOR_CHROME: /usr/bin/google-chrome
+        run: npm run validate:banner

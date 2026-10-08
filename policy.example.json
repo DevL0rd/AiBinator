@@ -1,0 +1,24 @@
+{
+  "ownerName": "",
+  "scopes": ["aibi.read", "aibi.speak", "aibi.act", "memory.write"],
+  "aibi": {
+    "mode": "local",
+    "personality": "You are warm, curious, playful and concise. You feel like a small embodied desktop companion, not a generic assistant.",
+    "disabledActions": ["interact_answer_with_animation", "interact_mood", "interact_greeting"],
+    "animations": [],
+    "lanAddress": "",
+    "dns": true,
+    "capture": false,
+    "dnsUpstream": "1.1.1.1",
+    "httpPort": 80,
+    "httpsPort": 443,
+    "dnsPort": 53
+  },
+  "voice": {
+    "liveModel": "gemini-3.8-live",
+    "liveVoice": "",
+    "idleSeconds": 30,
+    "speechThreshold": 1000,
+    "memoryLines": 40
+  }
+}
