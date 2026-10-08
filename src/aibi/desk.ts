@@ -20,7 +20,6 @@ export interface DeskHost {
     speeches: Speeches;
     providers: VoiceProviders;
     responder(): boolean;
-    working(): boolean;
     answer(request: string, answer: string): Promise<string>;
     command(name: string, value: string): Promise<string>;
     robot(): string;
@@ -218,7 +217,7 @@ export class VoiceDesk {
                 this.host.memory.add('aibi', text);
                 this.host.activity.add('said', text);
             },
-            working: () => this.open.size > 0 || this.host.working(),
+            working: () => this.open.size > 0,
             warn: (title, detail) => this.host.activity.add('warning', title, detail),
             ended: (conversation, untold) => {
                 if (this.conversation !== conversation) return;
@@ -289,7 +288,7 @@ export class VoiceDesk {
 
     private result(eventId: string, content: string, quiet: boolean): { spoken: 'now' | 'later' | false } {
         if (quiet) {
-            this.host.activity.add('task', 'Progress', content);
+            if (this.open.has(eventId)) this.host.activity.add('task', 'Progress', content);
             return { spoken: false };
         }
         this.open.delete(eventId);

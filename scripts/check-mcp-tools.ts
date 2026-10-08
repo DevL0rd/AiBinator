@@ -16,7 +16,6 @@ type Line = { id: number; role: string; text: string };
 const foreignRejection = { then: (_resolve: unknown, reject: (reason: string) => void) => reject('raw') } as unknown as Promise<unknown>;
 const responder: Responder = {
     available: () => true,
-    working: () => false,
     answer: () => Promise.resolve('passed on'),
     command: (name) => Promise.resolve(`ran ${name}`),
 };

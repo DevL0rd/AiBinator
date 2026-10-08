@@ -94,7 +94,6 @@ export function deskFixture(directory: string, patch: Partial<DeskHost> = {}) {
         speeches: new Speeches(),
         providers: gemini,
         responder: () => true,
-        working: () => false,
         answer: () => Promise.resolve('passed on'),
         command: (name) => Promise.resolve(`ran ${name}`),
         robot: () => 'battery: 80',

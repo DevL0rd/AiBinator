@@ -178,6 +178,34 @@ async function checkDuplicateTask(directory: string): Promise<void> {
     assert.match(String((gemini.last.named('tool')[1]![3] as { status: string }).status), /already running/);
 }
 
+async function checkStalledSession(directory: string): Promise<void> {
+    const { desk, gemini, host } = deskFixture(await mkdtemp(join(directory, 'stalled-')));
+    await desk.listen(stream(pcm(true)), chat);
+    assert.equal(gemini.sessions.length, 1);
+    assert.equal(host.activity.recent(5, 'warning').at(-1)?.title, 'Gemini did not answer in time');
+    gemini.reply = (session) => session.speak('Back again.');
+    const reply = await desk.listen(stream(pcm(true)), chat);
+    assert.equal(gemini.sessions.length, 2, 'a turn Gemini never answered starts a fresh session for the next one');
+    assert.equal(gemini.sessions[0]!.named('close').length, 1, 'and the stalled one is closed');
+    assert.equal(result(reply).behavior_paras.txt, 'Back again.');
+}
+
+async function checkForeignProgress(directory: string): Promise<void> {
+    const { desk, gemini, host } = deskFixture(await mkdtemp(join(directory, 'foreign-')));
+    gemini.reply = (session, cause) => {
+        if (cause === 'turn') session.events.tool('call-1', 'do_task', { task: 'check the build' });
+        session.speak(cause === 'turn' ? 'On it.' : 'Done.');
+    };
+    await desk.listen(stream(pcm(true)), info);
+    const context = host.queue.context(host.queue.snapshot(0, 10).events[0]!.id);
+    await context.respond!('Build passed.', false);
+    await context.respond!('Using discord send', true);
+    assert.ok(
+        !host.activity.recent(10, 'task').some((entry) => entry.detail === 'Using discord send'),
+        'progress after the task is done is not logged',
+    );
+}
+
 async function checkQuestions(directory: string): Promise<void> {
     const answers: [string, string][] = [];
     const { desk, gemini } = deskFixture(await mkdtemp(join(directory, 'questions-')), {
@@ -211,4 +239,6 @@ export async function checkAibiTasks(directory: string): Promise<void> {
     await checkQuestions(directory);
     await checkSpokenToolResult(directory);
     await checkDuplicateTask(directory);
+    await checkStalledSession(directory);
+    await checkForeignProgress(directory);
 }

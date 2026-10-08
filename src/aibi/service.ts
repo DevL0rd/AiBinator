@@ -15,7 +15,6 @@ import { tlsPair } from './tls.js';
 
 export interface Responder {
     available(): boolean;
-    working(): boolean;
     answer(request: string, answer: string): Promise<string>;
     command(name: string, value: string): Promise<string>;
 }
@@ -65,7 +64,6 @@ export class AibiService {
             speeches: this.speeches,
             providers,
             responder: () => responder.available(),
-            working: () => responder.working(),
             answer: (request, answer) => responder.answer(request, answer),
             command: (name, value) => responder.command(name, value),
             robot: () => this.robot,

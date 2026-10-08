@@ -16,7 +16,7 @@ Wake AIBI with its wake word as usual. Every turn goes to Gemini Live: AIBI uplo
 - **A native action** (a dance, lights, a timer) is done in that same turn. The next request needs the wake word again.
 - **A conversation**: whenever the voice answers out loud, AIBI switches to its conversation mode (AIBI's native connect), so you can keep talking without the wake word until the voice ends it itself (AIBI's native quit). The switch carries the answer's text and audio link, which AIBI plays. A native action, such as a dance, ends conversation mode.
 
-The live session stays open between wakes for **End a quiet conversation after** (`idleSeconds`, 30 seconds by default, longer while your responder is still working), so a quick follow-up keeps its context. Turns are manual: AIBI decides when you stopped talking, and AiBinator marks the start and end of your turn for Gemini.
+The live session stays open between wakes for **End a quiet conversation after** (`idleSeconds`, 30 seconds by default, longer while a task you gave AIBI is still running; your responder being busy with other work does not count), so a quick follow-up keeps its context. If Gemini does not answer a turn within 15 seconds, its session is closed and the next turn starts a fresh one, resumed where it left off. Turns are manual: AIBI decides when you stopped talking, and AiBinator marks the start and end of your turn for Gemini.
 
 AIBI's audio only starts a turn once it is loud enough: four 20 ms frames in a row at or above **Speech loudness** (`speechThreshold`, 4000 by default; on a real AIBI your voice peaks around 10,000 while room noise stays under about 3,500), with the moment just before kept so the first word is not cut off. A turn with nothing loud enough counts as silent.
 

@@ -31,7 +31,7 @@ export const voiceSettings = [
             path: 'voice.idleSeconds',
             label: 'End a quiet conversation after (seconds)',
             description:
-                'The voice ends a conversation by itself when you are done. This is the backstop: after this long without anyone speaking (and no work it is waiting on), AIBI stops listening.',
+                'The voice ends a conversation by itself when you are done. This is the backstop: after this long without anyone speaking (and no task you gave AIBI still running), AIBI stops listening.',
             kind: 'integer',
             minimum: 10,
             maximum: 600,

@@ -82,7 +82,6 @@ async function createRuntime(config: Config, policyConfig: PolicyConfig, oauth?:
     };
     runtime.aibi = new AibiService(policy, queue, new Gemini(() => config.GEMINI_API_KEY), {
         available: () => runtime.operator.available(),
-        working: () => runtime.operator.working(),
         answer: (request, answer) => runtime.operator.answer(request, answer),
         command: async (name, value) => {
             const reply = await new CommandService(runtime.operator).run(name, { name: value });

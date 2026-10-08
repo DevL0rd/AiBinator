@@ -53,6 +53,7 @@ export class Conversation {
     private reconnected = false;
     private chat = false;
     private idle?: NodeJS.Timeout;
+    private generation = 0;
 
     constructor(
         private readonly providers: VoiceProviders,
@@ -76,6 +77,12 @@ export class Conversation {
     private connect(): Promise<LiveSession> {
         const settings = this.hooks.settings();
         const resume = this.resume;
+        const generation = ++this.generation;
+        const live =
+            <A extends unknown[]>(handle: (...args: A) => void) =>
+            (...args: A) => {
+                if (generation === this.generation) handle(...args);
+            };
         return this.providers.live(
             {
                 model: settings.liveModel,
@@ -85,15 +92,15 @@ export class Conversation {
                 ...(resume ? { resume } : {}),
             },
             {
-                audio: (pcm) => (this.speaker() ?? this.current()).audio(pcm),
-                said: (text) => (this.speaker() ?? this.current()).text(text),
-                heard: (text) => {
+                audio: live((pcm: Int16Array) => (this.speaker() ?? this.current()).audio(pcm)),
+                said: live((text: string) => (this.speaker() ?? this.current()).text(text)),
+                heard: live((text: string) => {
                     if (this.turn) this.turn.heard += text;
-                },
-                turnComplete: () => this.complete(),
-                tool: (id, name, args) => this.tool(id, name, args),
-                resumable: (handle) => (this.resume = handle),
-                closed: (reason) => void this.dropped(reason),
+                }),
+                turnComplete: live(() => this.complete()),
+                tool: live((id: string, name: string, args: Record<string, unknown>) => this.tool(id, name, args)),
+                resumable: live((handle: string) => (this.resume = handle)),
+                closed: live((reason: string) => void this.dropped(reason)),
             },
         );
     }
@@ -155,9 +162,7 @@ export class Conversation {
         this.queued = undefined;
         this.spare = undefined;
         if (this.untold.length) session.text(`${combined(this.untold.splice(0))}\n\n${waiting}`, false);
-        const turn = new Turn(this.speeches, 'tts', turnTimeoutMs, () =>
-            this.hooks.warn('Gemini did not answer in time', 'AIBI was told to keep listening.'),
-        );
+        const turn = new Turn(this.speeches, 'tts', turnTimeoutMs, () => this.stalled('AIBI was told to keep listening.'));
         this.turn = turn;
         session.startTurn();
         return turn;
@@ -167,9 +172,7 @@ export class Conversation {
         const session = await this.open();
         this.turns++;
         this.touch();
-        const turn = new Turn(this.speeches, kind, turnTimeoutMs, () =>
-            this.hooks.warn('Gemini did not answer in time', text.slice(0, 120)),
-        );
+        const turn = new Turn(this.speeches, kind, turnTimeoutMs, () => this.stalled(text.slice(0, 120)));
         this.turn = turn;
         session.text(text, true, image);
         return this.finish(turn);
@@ -298,6 +301,14 @@ export class Conversation {
         if (outcome.kind !== 'action') return false;
         this.queued = outcome;
         return true;
+    }
+
+    private stalled(detail: string): void {
+        this.hooks.warn('Gemini did not answer in time', `${detail} A fresh Gemini session is started for the next turn.`);
+        this.generation++;
+        const stale = this.session;
+        this.session = undefined;
+        void stale?.then((session) => session.close()).catch(() => undefined);
     }
 
     private async dropped(reason: string): Promise<void> {
